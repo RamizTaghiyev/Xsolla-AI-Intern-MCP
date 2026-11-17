@@ -7,7 +7,7 @@ import {
   userContributions,
 } from "../src/git.js";
 import { parseRemoteUrl, pullRequestStats } from "../src/hosting.js";
-import { contributionsMarkdown, insightsMarkdown } from "../src/insights-report.js";
+import { contributionsMarkdown, insightsMarkdown } from "../src/report.js";
 
 const F = "\x1f";
 const R = "\x1e";

@@ -7,8 +7,7 @@ import {
   userContributions,
 } from "./git.js";
 import { pullRequestStats } from "./hosting.js";
-import { contributionsMarkdown, insightsMarkdown } from "./insights-report.js";
-import { markdownReport } from "./report.js";
+import { contributionsMarkdown, insightsMarkdown, markdownReport } from "./report.js";
 import type {
   InsightSection,
   InsightsRequest,

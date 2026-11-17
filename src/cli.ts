@@ -42,7 +42,7 @@ function parseArgs(argv: string[]): Args {
   return args;
 }
 
-const USAGE = `Usage:
+const USAGE = `Usage (every command writes review-report.md, or review-report.json with --format json):
   inspector review        --repo <path> [--base-ref <ref>] [--validate <command>]
   inspector insights      --repo <path> [--section pull_requests|contributors|branches]... [--base-ref <ref>] [--format markdown|json]
   inspector contributions --repo <path> --author <name-or-email> [--since <date>] [--format markdown|json]`;
@@ -60,46 +60,44 @@ async function main() {
     return usageError(`Unknown --format: ${args.format}`);
   }
 
+  let report: string;
   switch (args.command) {
-    case "review": {
-      const report = await reviewRepository({
+    case "review":
+      report = await reviewRepository({
         repositoryPath: args.repositoryPath,
         baseRef: args.baseRef,
         validationCommands: args.validations,
         format: args.format,
       });
-      writeFileSync("review-report.md", report, "utf8");
-      console.log("Review report written to review-report.md");
-      return;
-    }
+      break;
     case "insights": {
       const unknown = args.sections.filter((s) => !ALL_INSIGHT_SECTIONS.includes(s as InsightSection));
       if (unknown.length) return usageError(`Unknown --section: ${unknown.join(", ")}`);
-      console.log(
-        await repositoryInsightsReport(
-          {
-            repositoryPath: args.repositoryPath,
-            sections: args.sections as InsightSection[],
-            baseRef: args.baseRef,
-          },
-          args.format,
-        ),
+      report = await repositoryInsightsReport(
+        {
+          repositoryPath: args.repositoryPath,
+          sections: args.sections as InsightSection[],
+          baseRef: args.baseRef,
+        },
+        args.format,
       );
-      return;
+      break;
     }
-    case "contributions": {
+    case "contributions":
       if (!args.author) return usageError("--author is required");
-      console.log(
-        authorContributionsReport(args.repositoryPath, args.author, {
-          since: args.since,
-          format: args.format,
-        }),
-      );
-      return;
-    }
+      report = authorContributionsReport(args.repositoryPath, args.author, {
+        since: args.since,
+        format: args.format,
+      });
+      break;
     default:
       return usageError();
   }
+
+  // Every command writes its report to the same file, so all output is read the same way.
+  const outputFile = args.format === "json" ? "review-report.json" : "review-report.md";
+  writeFileSync(outputFile, report.endsWith("\n") ? report : `${report}\n`, "utf8");
+  console.log(`Report written to ${outputFile}`);
 }
 
 main().catch((error) => {
