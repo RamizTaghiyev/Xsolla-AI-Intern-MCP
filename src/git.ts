@@ -10,7 +10,16 @@ function git(repositoryPath: string, args: string[]): string {
 
 export function changedFiles(repositoryPath: string, baseRef?: string): ChangedFile[] {
   const base = baseRef ?? "main";
-  const output = git(repositoryPath, ["diff", "--name-status", `${base}...HEAD`]);
+  
+  let output: string;
+  try {
+    output = git(repositoryPath, ["diff", "--name-status", `${base}...HEAD`]);
+  } catch (err: any) {
+    throw new Error(
+      `Could not diff against base ref "${base}". ` +
+      `Make sure that branch exists, or pass --base-ref <branch>.`
+    );
+  }
 
   return output
     .split("\n")
