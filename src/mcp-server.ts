@@ -6,28 +6,20 @@ import { authorContributionsReport, repositoryInsightsReport, reviewRepository }
 
 const server = new McpServer({ name: "repository-inspector", version: "2.0.0" });
 
-const agentRepository = process.env.INSPECTOR_AGENT_REPO;
-
 server.tool(
   "review_repository",
-  "Lists files changed between a Git base ref and HEAD.",
+  "Inspects a Git repository and returns a review report.",
   {
-    repo_path: z.string().describe("Absolute path to the Git repository."),
+    repoPath: z.string().describe("Repository path to inspect."),
     baseRef: z.string().optional(),
+    validationCommands: z.array(z.string()).optional(),
   },
-  async ({ repo_path, baseRef }) => {
-    if (agentRepository && repo_path !== agentRepository) {
-      return {
-        isError: true,
-        content: [{ type: "text", text: "Use the repository selected at startup." }],
-      };
-    }
-
+  async (input: any) => {
     const report = await reviewRepository({
-      repositoryPath: agentRepository ?? repo_path,
-      baseRef,
+      repositoryPath: input.repoPath,
+      baseRef: input.baseRef,
+      validationCommands: input.validationCommands,
     });
-
     return { content: [{ type: "text", text: report }] };
   },
 );
@@ -42,7 +34,7 @@ server.tool(
   "Read-only repository statistics: open and merged pull requests (GitHub) or merge requests (GitLab), " +
     "contributors with commit counts, and branches with their likely creator. Never modifies the repository.",
   {
-    repo_path: z.string().describe("Path to a local Git working tree."),
+    repoPath: z.string().describe("Path to a local Git working tree."),
     sections: z
       .array(z.enum(["pull_requests", "contributors", "branches"]))
       .optional()
@@ -56,7 +48,7 @@ server.tool(
   async (input) => {
     try {
       const text = await repositoryInsightsReport(
-        { repositoryPath: input.repo_path, sections: input.sections, baseRef: input.base_ref },
+        { repositoryPath: input.repoPath, sections: input.sections, baseRef: input.base_ref },
         input.format,
       );
       return { content: [{ type: "text", text }] };
@@ -71,14 +63,14 @@ server.tool(
   "Read-only summary of one author's contributions across all branches: commit count, lines added/deleted, " +
     "most-touched files and recent commits. Matches author name or email, case-insensitive.",
   {
-    repo_path: z.string().describe("Path to a local Git working tree."),
+    repoPath: z.string().describe("Path to a local Git working tree."),
     author: z.string().min(1).describe("Author name or email (substring, case-insensitive)."),
     since: z.string().optional().describe('Only commits after this date, e.g. "2025-01-01" or "3 months ago".'),
     format: z.enum(["markdown", "json"]).optional().describe("Output format. Defaults to markdown."),
   },
   async (input) => {
     try {
-      const text = authorContributionsReport(input.repo_path, input.author, {
+      const text = authorContributionsReport(input.repoPath, input.author, {
         since: input.since,
         format: input.format,
       });
