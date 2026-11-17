@@ -10,11 +10,11 @@ server.tool(
   "review_repository",
   "Inspects a Git repository and returns a review report.",
   {
-    repo_path: z.string().describe("Repository path to inspect."),
+    repoPath: z.string().describe("Repository path to inspect."),
     baseRef: z.string().optional(),
     validationCommands: z.array(z.string()).optional(),
   },
-  async (input: any) => {
+  async (input) => {
     const report = await reviewRepository({
       repositoryPath: input.repoPath,
       baseRef: input.baseRef,
