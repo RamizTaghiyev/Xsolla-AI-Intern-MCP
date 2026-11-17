@@ -15,3 +15,84 @@ export type ReviewRequest = {
   validationCommands?: string[];
   format?: "markdown" | "json";
 };
+
+// ---------------------------------------------------------------------------
+// Repository insights (read-only)
+// ---------------------------------------------------------------------------
+
+export type Contributor = {
+  name: string;
+  email: string;
+  commits: number;
+  firstCommit: string;
+  lastCommit: string;
+};
+
+export type CommitSummary = {
+  hash: string;
+  name: string;
+  email: string;
+  date: string;
+  subject: string;
+  additions: number;
+  deletions: number;
+};
+
+export type UserContributions = {
+  author: string;
+  commits: number;
+  additions: number;
+  deletions: number;
+  filesTouched: number;
+  firstCommit?: string;
+  lastCommit?: string;
+  topFiles: { path: string; commits: number }[];
+  recentCommits: CommitSummary[];
+};
+
+export type BranchInfo = {
+  name: string;
+  type: "local" | "remote";
+  lastCommit: string;
+  lastCommitAuthor: string;
+  lastCommitDate: string;
+  /** Best-effort: Git does not store who created a branch. */
+  createdBy: string;
+  createdByMethod: "first-unique-commit" | "tip-author";
+};
+
+export type HostingProvider = "github" | "gitlab";
+
+export type RemoteRepository = {
+  provider: HostingProvider;
+  host: string;
+  /** "owner/repo" on GitHub, "group/subgroup/project" on GitLab. */
+  projectPath: string;
+};
+
+export type PullRequestStats =
+  | {
+      status: "ok";
+      provider: HostingProvider;
+      projectPath: string;
+      /** "pull requests" on GitHub, "merge requests" on GitLab. */
+      label: string;
+      open: number;
+      merged: number;
+    }
+  | { status: "unavailable"; reason: string };
+
+export type InsightSection = "pull_requests" | "contributors" | "branches";
+
+export type InsightsRequest = {
+  repositoryPath: string;
+  sections?: InsightSection[];
+  baseRef?: string;
+};
+
+export type RepositoryInsights = {
+  repositoryPath: string;
+  pullRequests?: PullRequestStats;
+  contributors?: Contributor[];
+  branches?: { baseRef?: string; branches: BranchInfo[] };
+};
