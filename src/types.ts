@@ -54,11 +54,7 @@ export type BranchInfo = {
   name: string;
   type: "local" | "remote";
   lastCommit: string;
-  lastCommitAuthor: string;
   lastCommitDate: string;
-  /** Best-effort: Git does not store who created a branch. */
-  createdBy: string;
-  createdByMethod: "first-unique-commit" | "tip-author";
 };
 
 export type HostingProvider = "github" | "gitlab";
@@ -87,12 +83,11 @@ export type InsightSection = "pull_requests" | "contributors" | "branches";
 export type InsightsRequest = {
   repositoryPath: string;
   sections?: InsightSection[];
-  baseRef?: string;
 };
 
 export type RepositoryInsights = {
   repositoryPath: string;
   pullRequests?: PullRequestStats;
   contributors?: Contributor[];
-  branches?: { baseRef?: string; branches: BranchInfo[] };
+  branches?: BranchInfo[];
 };

@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  branches,
   parseBranches,
   parseContributors,
   parseUserContributions,
@@ -74,9 +73,9 @@ describe("parseUserContributions", () => {
 describe("parseBranches", () => {
   it("separates local and remote branches and drops origin/HEAD", () => {
     const output = [
-      `refs/heads/main${F}main${F}abc1234${F}Alice${F}<a@x.io>${F}2025-01-01T00:00:00Z`,
-      `refs/remotes/origin/HEAD${F}origin${F}abc1234${F}Alice${F}<a@x.io>${F}2025-01-01T00:00:00Z`,
-      `refs/remotes/origin/feature${F}origin/feature${F}def5678${F}Bob${F}<b@x.io>${F}2025-01-02T00:00:00Z`,
+      `refs/heads/main${F}main${F}abc1234${F}2025-01-01T00:00:00Z`,
+      `refs/remotes/origin/HEAD${F}origin${F}abc1234${F}2025-01-01T00:00:00Z`,
+      `refs/remotes/origin/feature${F}origin/feature${F}def5678${F}2025-01-02T00:00:00Z`,
     ].join("\n");
 
     const result = parseBranches(output);
@@ -85,14 +84,18 @@ describe("parseBranches", () => {
       ["main", "local"],
       ["origin/feature", "remote"],
     ]);
-    expect(result[1].lastCommitAuthor).toBe("Bob <b@x.io>");
+    expect(result[1]).toEqual({
+      name: "origin/feature",
+      type: "remote",
+      lastCommit: "def5678",
+      lastCommitDate: "2025-01-02T00:00:00Z",
+    });
   });
 });
 
 describe("read-only guards", () => {
-  it("rejects option-like author/since/base values before running git", () => {
+  it("rejects option-like author/since values before running git", () => {
     expect(() => userContributions(".", "alice", { since: "--output=/tmp/x" })).toThrow(/must not start/);
-    expect(() => branches(".", { baseRef: "--output=/tmp/x" })).toThrow(/must not start/);
     expect(() => userContributions(".", "  ")).toThrow(/must not be empty/);
   });
 });

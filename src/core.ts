@@ -45,7 +45,7 @@ export async function repositoryInsights(request: InsightsRequest): Promise<Repo
     insights.contributors = contributors(request.repositoryPath);
   }
   if (sections.has("branches")) {
-    insights.branches = branches(request.repositoryPath, { baseRef: request.baseRef });
+    insights.branches = branches(request.repositoryPath);
   }
   return insights;
 }

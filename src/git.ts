@@ -16,7 +16,6 @@ const READ_ONLY_SUBCOMMANDS = new Set([
   "log",
   "for-each-ref",
   "rev-parse",
-  "symbolic-ref",
   "remote",
 ]);
 
@@ -28,10 +27,6 @@ function assertReadOnly(args: string[]): void {
   // `git remote` can add/remove remotes; only `get-url` is allowed.
   if (subcommand === "remote" && action !== "get-url") {
     throw new Error(`Refusing to run git remote ${action}: only 'get-url' is allowed`);
-  }
-  // `git symbolic-ref <name> <target>` would write a ref; only reading (one name) is allowed.
-  if (subcommand === "symbolic-ref" && args.filter((a) => !a.startsWith("-")).length > 2) {
-    throw new Error("Refusing to run git symbolic-ref with a target: only reads are allowed");
   }
 }
 
@@ -205,19 +200,16 @@ export function userContributions(
 // Branches
 // ---------------------------------------------------------------------------
 
-type RawBranch = Omit<BranchInfo, "createdBy" | "createdByMethod">;
-
-export function parseBranches(output: string): RawBranch[] {
+export function parseBranches(output: string): BranchInfo[] {
   return output
     .split("\n")
     .filter(Boolean)
     .map((line) => {
-      const [refname, name, lastCommit, tipAuthor, tipEmail, lastCommitDate] = line.split(FIELD);
+      const [refname, name, lastCommit, lastCommitDate] = line.split(FIELD);
       return {
         name,
         type: refname.startsWith("refs/remotes/") ? ("remote" as const) : ("local" as const),
         lastCommit,
-        lastCommitAuthor: tipEmail ? `${tipAuthor} ${tipEmail}` : tipAuthor,
         lastCommitDate,
         refname,
       };
@@ -227,58 +219,14 @@ export function parseBranches(output: string): RawBranch[] {
     .map(({ refname: _refname, ...branch }) => branch);
 }
 
-/** Best guess at the repository's default branch (e.g. "origin/main" or "main"). */
-export function defaultBranch(repositoryPath: string): string | undefined {
-  const remoteHead = tryGit(repositoryPath, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]);
-  if (remoteHead) return remoteHead;
-  for (const candidate of ["main", "master", "origin/main", "origin/master"]) {
-    if (tryGit(repositoryPath, ["rev-parse", "--verify", "--quiet", `${candidate}^{commit}`])) {
-      return candidate;
-    }
-  }
-  return undefined;
-}
-
-/**
- * Lists local and remote-tracking branches.
- *
- * Git does not record who created a branch. We approximate it as the author of
- * the first commit that is on the branch but not on the base branch. When the
- * branch has no unique commits (already merged, or just created), we fall back
- * to the author of the branch tip and say so in `createdByMethod`.
- */
-export function branches(
-  repositoryPath: string,
-  options: { baseRef?: string; maxCreatorLookups?: number } = {},
-): { baseRef?: string; branches: BranchInfo[] } {
+/** Lists local and remote-tracking branches, most recently updated first. */
+export function branches(repositoryPath: string): BranchInfo[] {
   const output = git(repositoryPath, [
     "for-each-ref",
     "--sort=-committerdate",
-    `--format=%(refname)%1f%(refname:short)%1f%(objectname:short)%1f%(authorname)%1f%(authoremail)%1f%(committerdate:iso-strict)`,
+    `--format=%(refname)%1f%(refname:short)%1f%(objectname:short)%1f%(committerdate:iso-strict)`,
     "refs/heads",
     "refs/remotes",
   ]);
-  const raw = parseBranches(output);
-
-  const baseRef = options.baseRef ?? defaultBranch(repositoryPath);
-  if (baseRef) assertNotOption(baseRef, "base ref");
-  const maxLookups = options.maxCreatorLookups ?? 200;
-
-  const result = raw.map((branch, index): BranchInfo => {
-    const isBase = baseRef !== undefined && (branch.name === baseRef || `origin/${branch.name}` === baseRef);
-    if (!baseRef || isBase || index >= maxLookups) {
-      return { ...branch, createdBy: branch.lastCommitAuthor, createdByMethod: "tip-author" };
-    }
-    const firstUnique = tryGit(repositoryPath, [
-      "log",
-      "--reverse",
-      `--format=%aN <%aE>`,
-      `${baseRef}..${branch.name}`,
-    ])?.split("\n")[0];
-    return firstUnique
-      ? { ...branch, createdBy: firstUnique, createdByMethod: "first-unique-commit" }
-      : { ...branch, createdBy: branch.lastCommitAuthor, createdByMethod: "tip-author" };
-  });
-
-  return { baseRef, branches: result };
+  return parseBranches(output);
 }

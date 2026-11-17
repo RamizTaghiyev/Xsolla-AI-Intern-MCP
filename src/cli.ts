@@ -44,7 +44,7 @@ function parseArgs(argv: string[]): Args {
 
 const USAGE = `Usage (every command writes review-report.md, or review-report.json with --format json):
   inspector review        --repo <path> [--base-ref <ref>] [--validate <command>]
-  inspector insights      --repo <path> [--section pull_requests|contributors|branches]... [--base-ref <ref>] [--format markdown|json]
+  inspector insights      --repo <path> [--section pull_requests|contributors|branches]... [--format markdown|json]
   inspector contributions --repo <path> --author <name-or-email> [--since <date>] [--format markdown|json]`;
 
 function usageError(message?: string): void {
@@ -77,7 +77,6 @@ async function main() {
         {
           repositoryPath: args.repositoryPath,
           sections: args.sections as InsightSection[],
-          baseRef: args.baseRef,
         },
         args.format,
       );

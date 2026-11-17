@@ -62,7 +62,7 @@ export function insightsMarkdown(insights: RepositoryInsights): string {
   }
 
   if (insights.branches) {
-    const { baseRef, branches } = insights.branches;
+    const branches = insights.branches;
     const local = branches.filter((b) => b.type === "local").length;
     const remote = branches.length - local;
     lines.push(
@@ -70,16 +70,11 @@ export function insightsMarkdown(insights: RepositoryInsights): string {
       "## Branches",
       "",
       `Total branches: **${branches.length}** (${local} local, ${remote} remote-tracking)`,
-      `Base branch used for creator detection: ${baseRef ? `\`${baseRef}\`` : "_none found_"}`,
-      "",
-      "> Git does not record who created a branch. \"Created by\" is the author of the first",
-      "> commit unique to the branch; if there is none, the author of the branch tip (marked *).",
     );
     if (branches.length > 0) {
-      lines.push("", "| Branch | Type | Created by | Last commit | Last commit date |", "| --- | --- | --- | --- | --- |");
+      lines.push("", "| Branch | Type | Last commit | Last commit date |", "| --- | --- | --- | --- |");
       for (const b of branches) {
-        const creator = b.createdByMethod === "tip-author" ? `${b.createdBy} *` : b.createdBy;
-        lines.push(`| ${cell(b.name)} | ${b.type} | ${cell(creator)} | \`${b.lastCommit}\` | ${day(b.lastCommitDate)} |`);
+        lines.push(`| ${cell(b.name)} | ${b.type} | \`${b.lastCommit}\` | ${day(b.lastCommitDate)} |`);
       }
     }
   }
