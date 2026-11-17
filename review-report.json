@@ -1,0 +1,246 @@
+{
+  "repositoryPath": "C:\\Users\\user\\IdeaProjects\\credhub",
+  "changedFiles": [
+    {
+      "path": "credhub-ui/src/api/endpoints.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/api/items.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/accept-invite/AcceptInvitePage.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/change-password/ChangePasswordPage.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/components/NewPasswordFields.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/auth/components/password-validation.css",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/auth/jwt.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/login/login.css",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/reset-password/ResetPasswordPage.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/auth/validation/passwordSchemas.ts",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/auth/validation/useYupForm.ts",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/common/AccountMenu.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/common/popups.css",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/common/settings/TwoFactorSetting.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/common/settings/sessionLabels.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/common/usePopupPresence.ts",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/i18n/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/i18n/locales/az/translation.json",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/i18n/locales/en/translation.json",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/i18n/locales/ru/translation.json",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/main.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/DetailActions.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/DetailFields.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/DetailPanel.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/DuplicateItemModal.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/vault/ItemList.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/ItemVaultMenu.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/vault/MoveItemModal.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/vault/NewItemModal.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/PasswordGenerator.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/PasswordHistory.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/vault/RotatePasswordModal.tsx",
+      "status": "added"
+    },
+    {
+      "path": "credhub-ui/src/vault/ShareItemModal.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/Sidebar.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/VaultPage.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/data.ts",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/icons.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/src/vault/vault.css",
+      "status": "modified"
+    },
+    {
+      "path": "credhub-ui/tsconfig.app.json",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/controller/ItemController.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/AcceptInviteRequest.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/ChangePasswordRequest.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/DuplicateItemRequest.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/MoveItemRequest.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/ResetPasswordRequestDto.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/RotatePasswordRequest.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/dto/SecretHistoryEntryDTO.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/entity/ItemSecretHistory.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/exception/GlobalExceptionHandler.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/exception/InvalidFieldException.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/exception/InvalidItemOperationException.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/repository/ItemSecretHistoryRepository.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/service/VaultItemService.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/net/sinam/credhub/service/impl/VaultItemServiceImpl.java",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/main/java/validation/AccountPassword.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/java/validation/AccountPasswordValidator.java",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/resources/db/changelog/changes/042-item-secret-history.yaml",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/resources/db/changelog/changes/044-item-moved-change-type.yaml",
+      "status": "added"
+    },
+    {
+      "path": "credhub/src/main/resources/db/changelog/db.changelog-master.yaml",
+      "status": "modified"
+    },
+    {
+      "path": "credhub/src/test/java/net/sinam/credhub/service/impl/VaultItemServiceImplRotateTest.java",
+      "status": "added"
+    }
+  ],
+  "validationResults": []
+}

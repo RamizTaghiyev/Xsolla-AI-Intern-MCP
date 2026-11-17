@@ -1,16 +1,17 @@
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";       
+import { promisify } from "node:util"; 
 import type { ValidationResult } from "./types.js";
 
-export function runValidation(command: string, cwd: string): Promise<ValidationResult> {
-  return new Promise((resolve, reject) => {
-    exec(command, { cwd }, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve({ command, status: "passed", output: stdout || stderr });
-    });
-  });
+const execFileAsync = promisify(execFile);  
+
+export async function runValidation(command: string, cwd: string): Promise<ValidationResult> {
+  const [file, ...args] = command.split(" ");
+  try {
+    const { stdout, stderr } = await execFileAsync(file, args, { cwd, shell: false });
+    return { command, status: "passed", output: stdout || stderr };
+  } catch (err: any) {
+    return { command, status: "failed", output: err?.stderr || err?.message || "failed" };
+  }
 }
 
 export async function runValidations(commands: string[], cwd: string): Promise<ValidationResult[]> {

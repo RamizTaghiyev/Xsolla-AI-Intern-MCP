@@ -17,3 +17,7 @@ export function markdownReport(input: ReportInput): string {
   }
   return lines.join("\n");
 }
+
+export function jsonReport(input: ReportInput): string {
+  return JSON.stringify(input, null, 2);
+}

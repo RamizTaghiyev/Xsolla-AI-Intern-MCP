@@ -30,7 +30,14 @@ function parseArgs(argv: string[]): Args {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.command !== "review" || !args.repositoryPath) {
-    console.error("Usage: inspector review --repo <path> [--base-ref <ref>] [--validate <command>]");
+    console.error("Usage: inspector review --repo <path> [--base-ref <ref>] [--format markdown|json] [--validate <command>]");
+    process.exitCode = 1;
+    return;
+  }
+
+  const format = args.format ?? "markdown";
+  if (format !== "markdown" && format !== "json") {
+    console.error(`Invalid --format "${args.format}". Use "markdown" or "json".`);
     process.exitCode = 1;
     return;
   }
@@ -39,10 +46,12 @@ async function main() {
     repositoryPath: args.repositoryPath,
     baseRef: args.baseRef,
     validationCommands: args.validations,
-    format: args.format,
+    format,
   });
-  writeFileSync("review-report.md", report, "utf8");
-  console.log("Review report written to review-report.md");
+
+  const outFile = format === "json" ? "review-report.json" : "review-report.md";
+  writeFileSync(outFile, report, "utf8");
+  console.log(`Review report written to ${outFile}`);
 }
 
 main().catch((error) => {
