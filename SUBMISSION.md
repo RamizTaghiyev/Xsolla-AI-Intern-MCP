@@ -869,9 +869,11 @@ Another blocker I encountered is how Claude Code initially implemented the Addit
 
 There are few additional finds that I found later 
 MCP adapter is behaviorally inconsistent with the CLI, It uses repoPath while the CLI uses --repo,
+the MCP tool should use `repositoryPath` in order to keep the naming consistent 
 
 Moreover it has no format parameter, so MCP callers can’t get JSON at all, throws instead of returning a structured MCP error, describes itself as “Inspects a Git repository” with no mention that it executes commands, and leaves baseRef/validationCommands undescribed.
 So, the next thing I would do is implement this fixes.
+In order to address this next, I would add JSON output to MCP, return clear errors
 
 Next known limitation it has a lot of unhandled error messages in MCP Server. It can be really easily resolved with a simple try catch 
 
