@@ -1,4 +1,30 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+*.tsbuildinfo
+
+# Generated review reports
 review-report.md
+review-report.json
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Local environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
 *.log
+
+# Editor settings
+.idea/
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
