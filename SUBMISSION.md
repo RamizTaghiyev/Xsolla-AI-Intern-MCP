@@ -848,12 +848,20 @@ One of the additional minute blockers was that after implementing json implemena
 Another blocker I encountered is how Claude Code initially implemented the Additional GItHub Actions that I described Above. 
 
 ## Known limitations and the next three things you would do
-One of the main known limitations is that the MCP adapter is behaviorally inconsistent with the CLI
-It uses repoPath while the CLI uses --repo,
-has no format parameter, so MCP callers can’t get JSON at all,
-throws instead of returning a structured MCP error,
-describes itself as “Inspects a Git repository” with no mention that it executes commands, and leaves baseRef/validationCommands undescribed.
-So, the next thing I would do is implement this fixes 
+
+There are few additional finds that I found later 
+MCP adapter is behaviorally inconsistent with the CLI, It uses repoPath while the CLI uses --repo,
+
+Moreover it has no format parameter, so MCP callers can’t get JSON at all, throws instead of returning a structured MCP error, describes itself as “Inspects a Git repository” with no mention that it executes commands, and leaves baseRef/validationCommands undescribed.
+So, the next thing I would do is implement this fixes.
+
+Next known limitation it has a lot of unhandled error messages in MCP Server. It can be really easily resolved with a simple try catch 
+
+#### Lack of native User Friendly UI 
+So, the next step I would've implemented this tool in a small application written using React ts and GoLand. Using the existing rough prototype of the AI Agent. First and foremost, I would've refined the AI Agent and connected it to official GitHub MCP Server for wide array of commands for him to use. Next Step would be to build a frontend UI , The AI Agent Chatbox and the Dashboard, so that actions performed by the AI Agent such as "List all branches" or "List all contributors" would be displayed cleanly in a UI Dashboard (For example, the tables inside the dashboard can be written using React's UI framework "Material UI (MUI)")
+The branches would be be dynamically displayed in a table format inside the dashboard and can be manipulated (e.g. delete branch). These actions can be performed using both AI Chatbot Agent or manually via UI Button on Dashboard (e.g. "Delete Branch"). 
+So, the manual action structure would be really similar to the way Current CLI works while the Rought Prototype of the Agent was quickly implemented as well.
+
 
 ## Approximate focused-work time
 
@@ -862,4 +870,5 @@ So, the next thing I would do is implement this fixes
 
 While there were big gaps so the 90 minutes had to be spread out unfortunately 
 The total time would accumulate to approximately 180 minutes 
+A lot of time took for me to document everything inside the SUBMISSION.md file cleanly as well as bug and security vulnerability fixes, I truly appologize for that. 
 I truly apologize for such a time scope inconsistency. I was working hard on this project. 
