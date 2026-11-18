@@ -19,17 +19,6 @@ Secondly, I followed all the commands given inside the README.md file, ran both 
 
 
 After that I used my work laptop and tested in on the password manager project that I am currently working on in Sinam called “CredHub” in GitLad work repository (TypeScript + Java) 
-```
-# Review Report: C:\Users\user\IdeaProjects\credhub
-
-## Changed files
-- credhub-ui/src/api/endpoints.ts (modified)
-- credhub-ui/src/api/items.ts (modified)
-- credhub-ui/src/auth/accept-invite/AcceptInvitePage.tsx (modified)
-- credhub/src/main/java/net/sinam/credhub/controller/ItemController.java (modified)
-- credhub/src/main/resources/db/changelog/changes/042-item-secret-history.yaml (added)
-```
-I most probablly  cant show full output but this is a simple demonstration of how output looked for me and how I investigated (and a little snapshot of what I am working on at work)
 
 #### npm audit
 
@@ -295,31 +284,7 @@ it saved the json SYNTAX inside the `review-report.md` but the file was not `rev
   "repositoryPath": "C:\\Users\\user\\IdeaProjects\\credhub",
   "changedFiles": [
     {
-      "path": "credhub-ui/src/api/endpoints.ts",
-      "status": "modified"
-    },
-    {
       "path": "credhub-ui/src/api/items.ts",
-      "status": "modified"
-    },
-    {
-      "path": "credhub-ui/src/auth/accept-invite/AcceptInvitePage.tsx",
-      "status": "modified"
-    },
-    {
-      "path": "credhub-ui/src/auth/change-password/ChangePasswordPage.tsx",
-      "status": "modified"
-    },
-    {
-      "path": "credhub-ui/src/auth/components/NewPasswordFields.tsx",
-      "status": "added"
-    },
-    {
-      "path": "credhub-ui/src/auth/components/password-validation.css",
-      "status": "added"
-    },
-    {
-      "path": "credhub-ui/src/auth/jwt.ts",
       "status": "modified"
     },
 ```
