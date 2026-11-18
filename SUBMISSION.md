@@ -394,11 +394,29 @@ One more implementation I wanted to instantly make upon first glancing thought t
 
 - Decision: Hybrid, with one shared core.ts
 - Primary user and execution environment:
+1. Developers and CI (e.g. GitHub Actions) use the CLI, locally or in a
+    pipeline.
+2.  AI coding agents use the MCP server, running on the developer's machine.
 - Trust boundary and allowed capabilities:
+  1. The CLI is trusted, because a human or a CI config chooses the commands.
+  2. The MCP tool is not trusted, because an agent can be tricked by text in a repo (prompt injection) into requesting something harmful.
+  3.  MCP should only read Git changes and run allowed checks such as test, lint and typecheck, with a timeout.
+  4.  The MCP tool description must say that it runs commands, so clients ask the user first.
+  5.  Neither interface uses a shell anymore, because I replaced `exec` with `execFile`.
 - Reliability, discoverability, latency/context, and output tradeoffs:
+  1. Reliability: shared core means a fix in one place fixes both.
+  2. Discoverability: CLI has usage text; MCP depends on clear tool and
+    parameter descriptions, which were missing.
+  3. Latency/context: long test runs need a timeout; large output fills the
+    agent's context, so it should be limited.
+  4. Output: Markdown for humans, JSON for agents and CI. Both interfaces
+    should support both formats.
 - How supported interfaces remain consistent:
+  1. Both go through the same `reviewRepository()` in `core.ts`, but they don't fully match yet. MCP uses `repoPath` instead of `--repo`, has no `format` option, and throws errors instead of returning them.
+  2.  Next, I'd give them one shared input schema and add tests that check both return the same result.
 - Evidence that would change this decision:
-
+  1. If AI agents get more reliable and we can safely limit what commands they run, I'd switch to MCP-first and keep the CLI mainly for CI.
+  
 
 After branstorming what approach is the best The scope is hybrid for both CLI Developers and AI Agents to use
 
