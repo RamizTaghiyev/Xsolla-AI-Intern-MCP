@@ -153,7 +153,7 @@ Another finding of Claude Code was that the
 `const base = baseRef ?? "main";` as a hardcoded main and that there can be another naming such as "master". This can be rejected. Since defaulting as main is logical since it is the default branch. 
 However His next claim points to another issue that there is no error handling around the git call, so a non-existent base ref crashes the entire program with an ugly, uninformative stack trace instead of a clear message like “base branch ‘main’ not found — pass --base-ref.”. 
 The solution for this will be simple try catch with error message from above. 
-(However, if someone is using old repositories that has "master" as the default branch they are probably Senior and can understand the stack trace too.. but thats just my guess here..)
+
  
 
 
@@ -204,13 +204,14 @@ export async function runValidation(command: string, cwd: string): Promise<Valid
 
 ```
 
-So, now I am confirming that the Command Injection worked 
+So, now after the fix, the same input no longer runs through a shell:
 ```
 PS C:\Users\user\Xsolla_InternShip_AI_First\Xsolla-AI-Intern-MCP> npx tsx -e "import {runValidation} from './src/validation.ts'; runValidation('echo safe & whoami', '.').then(r => console.log(r.output))"
 spawn echo ENOENT
 PS C:\Users\user\Xsolla_InternShip_AI_First\Xsolla-AI-Intern-MCP> 
 ```
-So according to Claude Code and Stackoverflow `spawn echo ENOENT` is the fix working and it’s actually the cleanest possible proof on Windows
+
+So, this is a shell-execution fix. However there is still a remaining MCP authorization gap.
 
 Moreover, failing validation crashes the program was also resolved 
 ```
@@ -277,7 +278,7 @@ export function jsonReport(input: ReportInput): string {
 After that, add this import to the `core.ts` 
 `import { markdownReport, jsonReport } from "./report.js";`
 
-So, after that i tested how this worked fully ready that it will be fully functional but was absolutely devastated: 
+So, after that i tested how this worked fully ready that it will be fully functional: 
 it saved the json SYNTAX inside the `review-report.md` but the file was not `review-report.json`. It is safe to assume that the user or even AI Agent for that matter requesting --format json does not expect file to be .md instead of .json
 ```
 {
@@ -312,7 +313,7 @@ Just simply change
 
 to 
 
-`args.repositoryPath = argv[++index];` and call it a day.. 
+`args.repositoryPath = argv[++index];` 
 
 
 #### try catch for main
@@ -351,7 +352,7 @@ However, even there it gave this
 _Unavailable: Could not query github API: 422 Unprocessable Entity from api.github.com_
 ```
 So, there was no time to properly implement the Official GitHub MCP Server connection 
->Hopefully I will have a chance during the AI-First Engineering Internship at Xsolla :D 
+>Hopefully I will have a chance during the AI-First Engineering Internship at Xsolla 
 >
 One more implementation I wanted to instantly make upon first glancing thought the assignment is to make a full small UI chatbot with a Dashboard that displays all the information from the repo. The user would've been talking with AI agent though a standard chatbox and AI agent will display all the data in a dashboard form in the interface. However this will be way to complex to implement with the time constraint. 
 
@@ -452,13 +453,11 @@ PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run agent -- "C:\Users\use
 The SmartCargo repository has **4 contributor identities**, with **191 commits** in total.
 
 | Name | Email | Commits | First commit | Last commit |
-| --- | --- | ---: | --- | --- |
-| Muzahim | 37937980+MMMuzahim@users.noreply.github.com | 57 | 2026-01-26 | 2026-04-29 |
-| google-labs-jules[bot] | 161369871+google-labs-jules[bot]@users.noreply.github.com | 56 | 2026-02-25 | 2026-04-28 |
+
 | Ramiz Taghiyev | ramiz.tagiyev26@gmail.com | 40 | 2026-04-14 | 2026-04-28 |
 | Ramiz Taghiyev | 91952906+RamizTaghiyev@users.noreply.github.com | 38 | 2026-04-02 | 2026-04-28 |
 
-- **Ramiz Taghiyev is listed twice** because he committed under two email addresses. The report can't confirm these are the same person, but if they are, he has **78 commits**. That would make him the top contributor, ahead of Muzahim.
+- **Ramiz Taghiyev is listed twice** because he committed under two email addresses. The report can't confirm these are the same person, but if they are, he has **78 commits**. 
 - **google-labs-jules[bot] is an automated AI coding agent**, not a person. It made 56 commits, which is close to a third of all commits.
 - **No commits are dated after 2026-04-29.** Every contributor's last commit is between April 28 and 29. This only covers the local copy of the repository, so newer work on the remote won't show up until it's fetched.
 PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> 
@@ -661,8 +660,6 @@ etc.
 
 Therefore, I wanted to get back to prototyping the best approach with the knowlidge I obtained. However, I needed to focus more 
 It is crucial to fully specify the scope and how the applicaiton currently works and state to AI that it is “strictly prohibited to deviate from the current architecture” 
-While I specified the current structure, I did the best It could and came up with the approach 
-I quickly analyed what were the main issues. One of them is the fact the Claude Code implemented the 
 
 Therefore, one of the most prominent AI Regections came came after my implementation of the GitHub actions. Specifically when Claude Code suggested to write the `insights-report.ts` that will be used to write all the actions in one place and output it inside the terminal instead of the review-report.md file. 
 
@@ -798,25 +795,7 @@ After Inspecting everything i could myself I turned my attention to ChatGPT AI a
 
 From ChatGPT AI I mainly clarified why `- review --repo` wasnt giving main output in the `review-report.md`. As I suspected first it was simply since using home laptop I tried to clone my senior design project test repo (however there was no local changes yet) 
 
-Another blocker is that my GitLab work repo didnt had the npm test scripts,
-It had build command which is the same
-```
-PS C:\Users\user\Xsolla_InternShip_AI_First\Xsolla-AI-Intern-MCP> npm.cmd --prefix "C:\Users\user\IdeaProjects\credhub\credhub-ui" run
-Scripts available in credhub-ui@0.0.0 via `npm run`:
-  dev
-  dev:remote
-    vite --mode dev
-  build
-    tsc -b && vite build
-  lint
-    eslint .
-    eslint . --fix
-  typecheck
-    tsc -b --noEmit
-  preview
-    vite preview
-```
-Using this I was able to sucessfuly 
+
 
 One of the main blockers was that upon trying to access pull and merge request I get 
 ```
@@ -841,6 +820,8 @@ So, the next thing I would do is implement this fixes.
 In order to address this next, I would add JSON output to MCP, return clear errors
 
 Next known limitation it has a lot of unhandled error messages in MCP Server. It can be really easily resolved with a simple try catch 
+
+No new tests were added for these fixes.
 
 #### Lack of native User Friendly UI 
 So, the next step I would've implemented this tool in a small application written using React ts and GoLand. Using the existing rough prototype of the AI Agent. First and foremost, I would've refined the AI Agent and connected it to official GitHub MCP Server for wide array of commands for him to use. Next Step would be to build a frontend UI , The AI Agent Chatbox and the Dashboard, so that actions performed by the AI Agent such as "List all branches" or "List all contributors" would be displayed cleanly in a UI Dashboard (For example, the tables inside the dashboard can be written using React's UI framework "Material UI (MUI)")
