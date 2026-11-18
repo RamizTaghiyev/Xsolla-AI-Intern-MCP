@@ -367,6 +367,9 @@ const base = baseRef ?? "main";
 ```
 
 
+
+
+
 ## What did you intentionally not do?
 There are multiple features I wanted to add. However due to time limitations I didnt implement. 
 Ability for the Claude AI Agent to manually resolve merge conflicts and push them to the repo given the correct permission. 
@@ -416,37 +419,9 @@ For the main robust implementations such as GitHub actions I used mainly Claude 
 
 I managed to connect and set up Claude Code into the  terminal inside vs code  using the `claude` and was conviniently using him inside vs code's terminal. Moreover, I connected him to the repo and made him push, commit and create branches, etc.
 
-```
-Make validation safe 
-The problem is that validation.ts uses exec(command), which runs any shell command. Over MCP, that means an AI agent can run rm -rf ~ or upload your secrets.
-The fix:
 
-Replace free-form commands with a fixed list of named checks, for example { test: ["npm", ["test"]], typecheck: ["npm", ["run","typecheck"]] }. MCP accepts only those names (z.enum([...])).
-Use execFile (no shell) instead of exec.
-Add timeout (for example 120 s) and maxBuffer, and cut long output (for example keep the last 200 lines).
-The CLI can keep --validate "<anything>", because a developer typing a command is trusted. Explain this difference as your trust boundary.
-```
-
-For the next quick prototype I decided to add an AI agent to the system. However at first there was a bug in the implementation of the AI Agent where he was unable to start the git program and couldnt find Git in its path
-
-```markdown
-I couldn't compare HEAD against `main`, so I can't summarize the changed files.
-
-**What happened:** I ran `review_repository` on `C:\Users\user\Documents\GitHub\TestCargo` with `main` as the base, and it failed with:
-
-
-spawnSync git ENOENT
-
-
-**What it means:** The tool couldn't start the `git` program. `ENOENT` means "file not found," so the tool's process can't find `git` on its PATH. The problem is with the tool's environment, not your repository. The comparison never ran, so this doesn't tell us anything about which files changed or about the state of HEAD or `main`.
-
-**Possible fixes:**
-1. **Check that Git is installed** by running `git --version` in PowerShell. If it isn't installed, get it from https://git-scm.com.
-2. **Add Git to PATH.** On Windows it's usually in `C:\Program Files\Git\cmd`. Add that folder to your system PATH.
-3. **Restart the inspector MCP server** (or Claude Code) so it picks up the new PATH. A running process won't see PATH changes until it restarts.
-
-Once `git` is available to the tool, I can run the comparison again and summarize the changes. Or, if you run `git diff --stat main...HEAD` in the repository yourself and paste the output, I can summarize that.
-```
+I used Claude Code AI Coding Agent to prepare the implementation of the AI Agents. 
+So, I decided to quickly prototype an implementation of AI agent using Claude Code to the system. 
 
 After running the `mcp-server` using `npm run mcp-server` 
 ```
@@ -458,105 +433,121 @@ PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run mcp-server
 
 ```
 
-AI Agent learned how to talk: 
+AI Agent learned how to talk and help with the requests 
+
+
+The agent was quickly implemented using anthropic's claude agent sdk import and connected to the custom MCP Server:
+(All this in the testing branch) 
 ```
-PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run agent -- "C:\Users\user\smartcargo\SmartCargo" "Compare HEAD against ma changed files."
+import { query } from "@anthropic-ai/claude-agent-sdk";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = fileURLToPath(new URL("../", import.meta.url));
+const serverEntry = fileURLToPath(new URL("./mcp-server.ts", import.meta.url));
+```
+
+The system prompt for the Claude AI Agent was as follows:
+```
+        "You are a Git repository inspection assistant.",
+        `Always pass repo_path set to ${JSON.stringify(repositoryPath)}.`,
+        "Use the tool before making claims about repository changes.",
+        "Report tool errors and explain what the report can establish.",
+``` 
+
+So, These are the examples used on my Senior Design Project of how the AI Agents are implemented: 
+[When we were writing Senior Design Project we were using GO as its backend language of choice, I really wanted to mention it this since Xsolla is using GoLang as its Backend language]:
+
+
+#### Listing all contributors 
+```
+PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run agent -- "C:\Users\user\smartcargo\SmartCargo" "Show all contributors"
 
 > ai-repo-inspector-assessment-v2@2.0.0 agent
-> tsx src/agents.ts C:\Users\user\smartcargo\SmartCargo Compare HEAD against main and summarize the changed files.
+> tsx src/agents.ts C:\Users\user\smartcargo\SmartCargo Show all contributors
 
-I ran the comparison, and **it returned no changed files between `main` and HEAD.**
+The SmartCargo repository has **4 contributor identities**, with **191 commits** in total.
 
-**Report contents:**
-# Review Report: C:\Users\user\smartcargo\SmartCargo
-## Changed files
-   (empty)
-## Validation output
-   (empty)
+| Name | Email | Commits | First commit | Last commit |
+| --- | --- | ---: | --- | --- |
+| Muzahim | 37937980+MMMuzahim@users.noreply.github.com | 57 | 2026-01-26 | 2026-04-29 |
+| google-labs-jules[bot] | 161369871+google-labs-jules[bot]@users.noreply.github.com | 56 | 2026-02-25 | 2026-04-28 |
+| Ramiz Taghiyev | ramiz.tagiyev26@gmail.com | 40 | 2026-04-14 | 2026-04-28 |
+| Ramiz Taghiyev | 91952906+RamizTaghiyev@users.noreply.github.com | 38 | 2026-04-02 | 2026-04-28 |
 
-There was no tool error, but both sections came back empty. I couldn't summarize any files because none were listed.
+- **Ramiz Taghiyev is listed twice** because he committed under two email addresses. The report can't confirm these are the same person, but if they are, he has **78 commits**. That would make him the top contributor, ahead of Muzahim.
+- **google-labs-jules[bot] is an automated AI coding agent**, not a person. It made 56 commits, which is close to a third of all commits.
+- **No commits are dated after 2026-04-29.** Every contributor's last commit is between April 28 and 29. This only covers the local copy of the repository, so newer work on the remote won't show up until it's fetched.
+PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> 
+```
 
-**What this likely means:**
-- HEAD is probably the same commit as `main`, or HEAD has no commits that `main` doesn't already have. For example, you may be onn a branch that has already been merged.
-- The tool compares commits, so uncommitted or staged changes in your working tree won't show up.
+#### Listing all branches: 
 
-**What this can't confirm:**
-- The report doesn't show which branch HEAD is on or what commit it points to, so I can't tell which of the cases above applies.
-- I can't tell whether `main` exists locally or is up to date with the remote. If your local `main` is old or missing, the compar you expected.
-- The empty "Validation output" section doesn't mean validation passed. It may just mean nothing was checked.
-
-PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run agent -- "C:\Users\user\smartcargo\SmartCargo" "Show all branches"   
+```
+PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> npm run agent -- "C:\Users\user\smartcargo\SmartCargo" "Show all Branches"    
 
 > ai-repo-inspector-assessment-v2@2.0.0 agent
-> tsx src/agents.ts C:\Users\user\smartcargo\SmartCargo Show all branches
+> tsx src/agents.ts C:\Users\user\smartcargo\SmartCargo Show all Branches
 
-I couldn't get the branch list. The tool that lists branches (`repository_insights`) needs your permission before it can run, andn't been granted yet, so it never ran.
+The SmartCargo repository has **33 branches**: 1 local branch and 32 remote-tracking branches on `origin`.
 
-The only other tool I can use, `review_repository`, only shows which files changed between a base branch and the current commit. es, so it wouldn't answer your question.
+**Local**
+| Branch | Last commit | Date |
+| --- | --- | --- |
+| main | `63a3911` | 2026-04-29 |
 
-   ```
+**Remote (origin)**
+| Branch | Last commit | Date |
+| --- | --- | --- |
+| main | `63a3911` | 2026-04-29 |
+| Fix-Directories-as-well-as-Admin-Management | `18fdbe6` | 2026-04-28 |
+| Changes_2 | `136a765` | 2026-04-28 |
+| test | `60e60d7` | 2026-04-28 |
+| fix-courier-websocket-id-parsing-11684564044115678522 | `f9e060a` | 2026-04-28 |
+| Messaging-System | `f36528c` | 2026-04-25 |
+| path-optimization-integration | `cc5fb5f` | 2026-04-25 |
+| courier-packages-integration | `7ca1c2b` | 2026-04-25 |
+| Changes_922 | `cadb5d6` | 2026-04-25 |
+| replace-tracking-code-to-id | `ea4e9fd` | 2026-04-25 |
+| rename-tracking-code-to-package-id-13553892081617772708 | `7104ab7` | 2026-04-25 |
+| Changes | `dea8223` | 2026-04-25 |
+| add-map-to-active-route | `7089a60` | 2026-04-25 |
+| vehicless | `c241a6b` | 2026-04-23 |
+| PACJAKAGEEPACJAKAGEEPACJAKAGEE | `7fe227f` | 2026-04-23 |
+| SEAARCHHHAAAAA-FIXX | `257232f` | 2026-04-23 |
+| role-assignmenttPFP | `b9a5da6` | 2026-04-22 |
+| feature/import-packages-modal-14857616208375280003 | `bdf86eb` | 2026-04-22 |
+| fix-admin-profile-name-16143651633925251929 | `5fa9fd0` | 2026-04-22 |
+| info_storoge | `65f142b` | 2026-04-22 |
+| fix/auth0-integration-9434287857475273612 | `6a0596d` | 2026-04-22 |
+| Role-Assignment | `5de1792` | 2026-04-22 |
+| messages-WebSocket-fix | `5671aa6` | 2026-04-22 |
+| real-time-messages-notifications | `0e92c52` | 2026-04-22 |
+| real-time-messages-notifications2 | `6421160` | 2026-04-22 |
+| feature/real-time-notifications-12657073594334459960 | `fdb2a2c` | 2026-04-22 |
+| assign-role-for-new-users | `999da64` | 2026-04-22 |
+| auth0-fix | `0fcdb7b` | 2026-04-21 |
+| feature/real-time-courier-messaging-1485635017086307530 | `69ae17b` | 2026-04-21 |
+| mobile-admin-menu | `8aee5b8` | 2026-04-17 |
+| air/delete-access_token-and-id_token-after-logout-of-admin-cc2ce9f5-8 | `3f2bbaf` | 2026-04-17 |
+| Filese_rebase | `29fb7ce` | 2026-04-16 |
 
-However after adding agents.ts test implementation I decided to scrap it since trying to resolve issues of AI Agent not being able to access tools will take way to much time. Additionally, implementation of the github actions(List Baranches, See Contributors, See Merge Requests, etc.) was also scrapped for the same reason. So, It was important now to focus on the more important task at hand - security vulnerability and bug fixes.. 
+- **Up to date:** Your local `main` points to the same commit as `origin/main` (`63a3911`).
+- **No recent activity:** The newest commit on any branch is from 2026-04-29, so nothing has been committed in about 6½ months.
+- **Branches only exist on origin:** All other branches are remote-tracking only. You haven't checked any of them out locally.
+- **Merge status isn't covered:** This only shows each branch's latest commit, not whether it has been merged into `main`. I can look up open and merged pull requests to find branches that may be safe to delete.
+PS C:\Users\user\TestXsolla\Xsolla-AI-Intern-MCP> 
+```
 
-Its important to understant the scope So, I quickly moved on to implemeting security and bug fixes. 
-
-
-
+I wish I had more time to refine this further using UI Chatbot Interface for example
 
 ## Where did you check, correct, or reject an AI suggestion? (required)
 
 I checked AI Suggestions a lot during the process of finding bugs in the program. 
 As stated above most of the AI Suggestions were mainly the fact errors produce raw output instead of using a try catch block.
-There was quite a substantial amount of AI Suggestions that I have rejected. However one of the most prominent ones came after my implementation of the GitHub actions. Specifically Claude Code suggested to write the `insights-report.ts` that will be used to write all the 
-
-In addition he implemented the report inside the insight-report.ts. I strongly believe that having a one unified report for now is sufficient. Unless there would be a lange scale implementation and there will be a good reason to split report.ts into seperate sections. 
-For example, if the file is too long it is better so split report by “what is being reported” 
-
-Also, the output of the report is submitted to the terminal instead of report-review.md 
-
-I strongly believe that following the initial structure of the project is preffered unless there is a good reason for any deviations. Because the production application might rely on the report-review.md file for example to be used in further analysis. For example when implemeting the UI Dashboard (im taking a guess here , but thats what I would’ve personally implemented as the next stage)   
-
-The fact that AI was deviating from the project’s initial structure shows how context and strict instructions are important event for a quick prototype phase. While opon writing the prompt it might not even occur that AI can deviate from the project structure. It is crucial to explain to AI coding agent the architecture and structure of the application. This is what I will try my best to achieve further. 
+There was quite a substantial amount of AI Suggestions that I have rejected. 
 
 
-
-
-I was brainstorming on how to implement, I used ChatGPT Codex for a rapid prototyppe implementation 
-
-my initial prompt looked as follows:
-```
-Role:
-You are given a task to implement the fuctionality for my Git Inspector Program
-
-Context:
-I am preparing for a AI-First Engineering Internship at Xsolla. The Project is a small TypeScript developer tool that inspects changes in a Git repository, runs optional validation commands, and produces a Markdown report. It can be used both from a command line interface and exposed to AI clients through MCP.
-The project is written in Typescript  
-The core.ts which is the main file has the reviewRepository function. 
-Moreover there is a git.ts file. It takes the repository checks for the changed files and outputs said files as (added) or (modified) accordingly
-Currently there is a already a really simple MCP Server imlementation in place. 
-
-
-Task:
-Imlement 
-1. How many open pull requests there are (Or how many merge requests (MR) there are if we use GitLab [P.s. I do at work])  
-2. How many merge requests there are 
-3. how many contributors 
-4. review specific user’s contributions 
-5. How many branches there are (and who created which branch)
-
-
-Constraints:
-It is stricktly forbidden to write code that modifies the repo in any way (e.g. git push)
-It is stricktly forbidden to write code that deletes anything from repo  
-```
-
-So, he implemented it using hosting.ts, meaning he wrote all provider API called inside a hosting file. Which is not exactly the implementation I personally wanted. 
-I initially considered that implementing github functions would be much better inside git.ts file 
-
-However I would need to use official Github MCP Server in order to get access to my desired features: “Number of Branches, Open Pull requests and etc.” 
-So, I went back to prototyping the best approach. 
-With this knowlidge I decided to quickly redo my approach while fully specifying the scope and how the applicaiton currently works and state to AI that it is “strictly prohibited to deviate from the current architecture” 
-However, I scrapped this Idea quickly and just told ai to implement result-review.md and result-insights.ts together and scrapped it in order to focus on Security and Bug fixes. 
 
 ####
 Moreover ne of the instant rejections I did when I saw is that  Claude Code proposed fixing one of the Bugs with exec() function. 
@@ -577,6 +568,150 @@ exec(command, { cwd, timeout: 120_000, maxBuffer: 10 * 1024 * 1024 }, (error, st
 });
 ```
 So, I instantly rejected this "suggestion" of his.
+
+
+
+For the next AI Check, Correction and Rejections I will describe the full cycle of me adding additional GitHub actions
+I was brainstorming on how to implement featurues of Github Actions, I used Claude Code for a rapid prototype implementation inside the `testing branch`
+
+my initial prompt was as follows:
+```
+Role:
+You are given a task to implement the fuctionality for my Git Inspector Program
+
+Context:
+I am preparing for a AI-First Engineering Internship at Xsolla. The Project is a small TypeScript developer tool that inspects changes in a Git repository, runs optional validation commands, and produces a Markdown report. It can be used both from a command line interface and exposed to AI clients through MCP.
+The project is written in Typescript  
+The core.ts which is the main file has the reviewRepository function. 
+Moreover there is a git.ts file. It takes the repository checks for the changed files and outputs said files as (added) or (modified) accordingly
+Currently there is a already a really simple MCP Server imlementation in place. 
+
+Project layout:
+- src/core.ts shared orchestration; contains reviewRepository() and four placeholder functions that I wrote modify them if needed:
+1. getContributors
+2. getOneContributor 
+3. getPullRequests 
+4. getBranches
+
+- src/git.ts git helpers; runs git via execFileSync (no shell). Contains: 
+1. resolveCommit(), which validates refs with
+2. `git rev-parse --verify --end-of-options <ref>^{commit}` and rejects anything starting with "-". 
+This is a security fix for git option injection — keep it and reuse the same pattern.
+
+- src/cli.ts CLI adapter
+
+- src/mcp-server.ts MCP adapter (currently one tool: review_repository)
+
+- src/types.ts shared types
+
+- test/ vitest tests; test/git.test.ts builds temporary git repos as fixtures
+
+Before writing code, read every file in src/ and test/ and summarise the existing patterns
+you will follow. 
+
+
+Task:
+Imlement 
+1. How many open pull requests there are
+2. how many contributors 
+3. review specific user’s contributions 
+4. How many branches there are
+
+
+Constraints:
+It is stricktly forbidden to write code that modifies the repo in any way (e.g. git push)
+It is stricktly forbidden to write code that deletes anything from repo  
+```
+
+So, he implemented it using hosting.ts, meaning he wrote all provider API called inside a hosting file. Which is not exactly the implementation I personally expected. 
+He connected dirrectly to GitHub API. Which is also one of the approaches. 
+I initially considered that implementing github functions would be much better inside git.ts file 
+I strongly believe that keeping the project structure as is crusial and writing the alongside the existing functions (reviewRepository function inside core.ts and git.ts) is the best architectural approach.  
+After that then calling these functions for cli.ts and mcp-server.ts 
+
+This approximatelly the structure Claude Code ended up going with. 
+He wrote the functions first inside git.ts (He moved my functions from core.ts to git.ts for the reasons of writing "repositoryInsights" function that compiles entire report at ones) 
+Then inside the core.ts he wrote function `export async function repositoryInsights` that provides the pullRequests , contributors and branches functions that are written inside git.ts and returns as insights output. All ot ones or one by one. 
+```
+  const sections = new Set(request.sections?.length ? request.sections : ALL_INSIGHT_SECTIONS);
+  const insights: RepositoryInsights = { repositoryPath: request.repositoryPath };
+
+  if (sections.has("pull_requests")) {
+    insights.pullRequests = await pullRequestStats(remoteUrl(request.repositoryPath));
+  }
+  if (sections.has("contributors")) {
+    insights.contributors = contributors(request.repositoryPath);
+  }
+  if (sections.has("branches")) {
+    insights.branches = branches(request.repositoryPath);
+  }
+  return insights;
+```
+
+The functions mock functions that I wrote `getContributors`, `getOneContributor`, `getPullRequests` and `getBranches` were renamed and moved to git.ts in favor of core.ts having the function calls to them but the functionality remained the same. 
+I strongly believe and it is requred so the architecture should stay the same with the existing architecture meaning that core.ts should create functions and then cli.ts and mcp-server.ts should call them. While git.ts only handles the Git Inspection. 
+For example, for getContributors he wrote: 
+```
+export function contributors(repositoryPath: string): Contributor[] {
+  const output = git(repositoryPath, [
+    "log",
+    "--all",
+    `--format=%aN${FIELD}%aE${FIELD}%aI`,
+  ]);
+  return parseContributors(output);
+}
+```
+For Branches it is:
+```
+export function branches(repositoryPath: string): BranchInfo[] {
+  const output = git(repositoryPath, [
+    "for-each-ref",
+    "--sort=-committerdate",
+    `--format=%(refname)%1f%(refname:short)%1f%(objectname:short)%1f%(committerdate:iso-strict)`,
+    "refs/heads",
+    "refs/remotes",
+  ]);
+  return parseBranches(output);
+}
+etc. 
+```
+
+Therefore, I wanted to get back to prototyping the best approach with the knowlidge I obtained. However, I needed to focus more 
+It is crucial to fully specify the scope and how the applicaiton currently works and state to AI that it is “strictly prohibited to deviate from the current architecture” 
+While I specified the current structure, I did the best It could and came up with the approach 
+I quickly analyed what were the main issues. One of them is the fact the Claude Code implemented the 
+
+Therefore, one of the most prominent AI Regections came came after my implementation of the GitHub actions. Specifically when Claude Code suggested to write the `insights-report.ts` that will be used to write all the actions in one place and output it inside the terminal instead of the review-report.md file. 
+
+In addition he implemented the report inside the insight-report.ts. I strongly believe that having a one unified report for now is sufficient. Unless there would be a lange scale implementation and there will be a good reason to split report.ts into seperate sections. 
+For example, if the file is too long it is better so split report by “what is being reported” 
+
+Also, the output of the report is submitted to the terminal instead of report-review.md 
+
+Therefore, In order not to lose time I quickly told AI to implement features of result-insights.ts inside the result-review.md and the output for both should be in the same .md (or.json) file. 
+
+I strongly believe that following the initial structure of the project is preffered unless there is a good reason for any deviations. Because the production application might rely on the report-review.md file for example to be used in further analysis. For example when implemeting the UI Dashboard (im taking a guess here , but thats what I would’ve personally implemented as the next stage)   
+
+The fact that AI was deviating from the project’s initial structure shows how context and strict instructions are important event for a quick prototype phase. While opon writing the prompt it might not even occur that AI can deviate from the project structure. It is crucial to explain to AI coding agent the architecture and structure of the application. This is what I will try my best to achieve further. 
+
+Next step would be to implement this functionalities properly and fix the architecture. However, since some functionalities such as view pull requests required the GitHub API Set up and Debug. Specifically, I got this error (Which I mentioned In the "Blockers section")
+
+```
+## Pull / merge requests
+
+_Unavailable: Could not query github API: 422 Unprocessable Entity from api.github.com_
+
+```
+Moreover, that opened a question for me whether it is better to implement GitHub's Official MCP Server Like how I initially wanted, Use Direct GitHub API Calls. 
+From my quick research I gathered that using GitHub's Official MCP Server lets AI Agents to freely access wide array GitHub actions such as "list_branches" letting users request desired function using natural language. 
+While the Direct API Calls can be beneficial for writing custom functions and making direct API Calls to execute them. 
+
+So, Claude Code's Initial attempt proved that he somewhat understood the task, but wrote additional components such as hosting.ts 
+
+The functionality worked perfectly and after my fixes with unified review-report.md exactly how on a surface level it would've been expected. However, Claude Code's needed further analysis. Therefore, I had to unfortunately abandon this part of the implementation and keep it as is due to time limitations.   
+
+
+
 
 
 ## Commands used to verify the result, with outcomes
@@ -662,7 +797,7 @@ npm run inspector -- contributions --repo <path> --author "alice@company.com"
 npm run inspector -- contributions --repo <path> --author "alice" --since "2026-01-01"
 npm run inspector -- contributions --repo <path> --author "alice" --since "3 months ago"
 
-#### ai agent rough rototype 
+#### ai agent rough prototype 
  npm run agent -- "C:\Users\user\smartcargo\SmartCargo" "Show all branches" 
 ```
 
@@ -710,7 +845,7 @@ _Unavailable: Could not query github API: 422 Unprocessable Entity from api.gith
 
 One of the additional minute blockers was that after implementing json implemenation the output was as .md file and not as .json. The reason I am mentioning this is becuase it caught me offguard at first. But I quickly realized what was the issue and quicky fixed and resolved it. (The review-report.md was hardcoded and there was no  .json check either in cli.ts)
 
-
+Another blocker I encountered is how Claude Code initially implemented the Additional GItHub Actions that I described Above. 
 
 ## Known limitations and the next three things you would do
 One of the main known limitations is that the MCP adapter is behaviorally inconsistent with the CLI
@@ -722,5 +857,9 @@ So, the next thing I would do is implement this fixes
 
 ## Approximate focused-work time
 
-- Start: 
-- Finish: 
+- Start: Approximately 11/17/2026 ~6:50 
+- Finish: Approximately 11/18/2026 ~12:45 
+
+While there were big gaps so the 90 minutes had to be spread out unfortunately 
+The total time would accumulate to approximately 180 minutes 
+I truly apologize for such a time scope inconsistency. I was working hard on this project. 
