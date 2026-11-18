@@ -865,10 +865,8 @@ So, the manual action structure would be really similar to the way Current CLI w
 
 ## Approximate focused-work time
 
-- Start: Approximately 11/17/2026 ~6:50 
+- Start: Approximately 11/17/2026 ~4:25 
 - Finish: Approximately 11/18/2026 ~12:45 
 
-While there were big gaps so the 90 minutes had to be spread out unfortunately 
-The total time would accumulate to approximately 180 minutes 
-A lot of time took for me to document everything inside the SUBMISSION.md file cleanly as well as bug and security vulnerability fixes, I truly appologize for that. 
-I truly apologize for such a time scope inconsistency. I was working hard on this project. 
+This is over the 90-minute limit. While the time included break total time would accumulate to approximately 120 minutes. I was working on the assessment periodically. 
+Roughly the first hour went to investigating the code and the main fixes and starting the implementaiton on additional GitHUb Actions and AI Agent. While the extra time was mostly spent writing up SUBMISSION.md and checking the security-related findings.
